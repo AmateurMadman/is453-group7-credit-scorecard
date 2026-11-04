@@ -1,0 +1,9 @@
+Characteristic,Information_Value,Predictive_Power
+YEARS_EMPLOYED,0.1179,Medium (0.10-0.30)
+EXT_SOURCE_1,0.1178,Medium (0.10-0.30)
+AGE,0.0899,Weak to Medium (0.02-0.10)
+PAYMENT_RATE,0.0737,Weak to Medium (0.02-0.10)
+BUREAU_DEBT_RATIO,0.0579,Weak to Medium (0.02-0.10)
+BUREAU_MONTHS_SINCE_RECENT,0.0541,Weak to Medium (0.02-0.10)
+REGION_RATING_CLIENT_W_CITY,0.0444,Weak to Medium (0.02-0.10)
+NAME_EDUCATION_TYPE,0.0404,Weak to Medium (0.02-0.10)

@@ -1,0 +1,9 @@
+# Operating System & Swap files
+.DS_Store
+*.swp
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
