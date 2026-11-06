@@ -193,9 +193,12 @@ employed (0.124), bureau debt-to-credit (0.108), share of bureau credits active 
 (0.098). The full list is in `g7_iv_fine_classing.csv`.
 
 ### 2. Coarse Classing (Week 10 & Week 11 labs)
-`sc.woebin` groups each variable into coarse bins with at least 5% of applicants each and a separate missing bin. Nine
-numeric variables did not show a one-direction (monotonic) trend, so adjusted bin edges were set with `breaks_list`
-(Week 10 Ex Q3) for seven variables, merging neighbouring bins whose bad rates crossed:
+`sc.woebin` groups each variable into coarse bins with at least 5% of applicants each and a separate missing bin. The
+notebook's monotonic check flagged **nine** numeric variables whose automatic bins did not show a one-direction trend:
+`TERM_MONTHS`, `CREDIT_TO_GOODS`, `AMT_ANNUITY`, `ELEVATORS_AVG`, `BUR_MAX_CREDIT`, `REGION_POPULATION_RELATIVE`,
+`NONLIVINGAREA_AVG`, `BUR_N_ACTIVE` and `FLOORSMIN_MEDI`. Adjusted bin edges were then set with `breaks_list`
+(Week 10 Ex Q3) for **seven** variables, merging neighbouring bins whose bad rates crossed. Five of the seven come from
+the flagged nine; `AMT_CREDIT` and `YEARS_BEGINEXPLUATATION_MEDI` were also given business-based edges:
 
 | Characteristic | Adjusted bin edges | Risk trend |
 | :--- | :--- | :--- |
@@ -214,7 +217,8 @@ numeric variables did not show a one-direction (monotonic) trend, so adjusted bi
 > length, but it is not the contract term and should not be described as a term. The shape is kept (Week 10 DIY Q1
 > approach) because forcing one direction would discard most of the strongest variable's information.
 
-Five variables are still not strictly monotonic after adjustment: `TERM_MONTHS` (kept on purpose, see above),
+Five variables are still not strictly monotonic after adjustment (the four flagged variables that were not adjusted, plus
+`TERM_MONTHS`): `TERM_MONTHS` (kept on purpose, see above),
 `BUR_N_ACTIVE` (in the final model: bad rates of 8.80%, 8.33%, 9.64% and 13.18% across its four bins, a small dip before
 the rise), and `ELEVATORS_AVG`, `NONLIVINGAREA_AVG` and `FLOORSMIN_MEDI` (not in the final model).
 
@@ -796,10 +800,11 @@ flowchart LR
 1. Place `IS453 Group Assignment - Application Data.csv` and `IS453 Group Assignment - Bureau Data.csv` in the same
    folder as `IS453_G7_Scorecard_Combined.ipynb`.
 2. Create a virtual environment with **Python 3.11 or 3.12** (not 3.13) and install `requirements.txt`:
-   `py -3.11 -m venv .venv`, then `.venv\Scripts\python -m pip install -r requirements.txt` on Windows
-   (`python3.11 -m venv .venv` and `.venv/bin/python -m pip install -r requirements.txt` on Mac).
-3. Run the notebook with Jupyter from `.venv`, not from a global Python. To run all cells from the command line:
-   `.venv\Scripts\python -m nbconvert --to notebook --execute --inplace IS453_G7_Scorecard_Combined.ipynb --ExecutePreprocessor.timeout=3600`.
+   `py -3.11 -m venv .venv`, then `.venv\Scripts\Activate.ps1` and `python -m pip install -r requirements.txt` on
+   Windows (`python3.11 -m venv .venv`, then `source .venv/bin/activate` and the same `pip install` on Mac).
+3. With `.venv` **activated**, run all cells from the command line:
+   `python -m nbconvert --to notebook --execute --inplace IS453_G7_Scorecard_Combined.ipynb --ExecutePreprocessor.timeout=3600`.
+   Activating puts `.venv` first on `PATH`, so Jupyter and the kernel both come from `.venv`, not from a global Python.
    The run can take 10 minutes or more. See `README.md` for troubleshooting.
 
 The notebook saves these files in the same folder: `g7_segment_sensitivity.csv`, `g7_iv_fine_classing.csv`,

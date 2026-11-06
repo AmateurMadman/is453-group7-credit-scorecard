@@ -56,13 +56,15 @@ The notebook has to run on the Python and Jupyter inside `.venv`, **not on a glo
 
 - **VS Code:** open the notebook, choose "Select Kernel" and pick the `.venv` interpreter.
 - **Jupyter in a browser:** activate `.venv` first, then run `python -m jupyter lab`.
-- **Command line (runs every cell and saves outputs into the notebook):**
+- **Command line (runs every cell and saves outputs into the notebook).** Activate `.venv` first
+  (`.venv\Scripts\Activate.ps1` on Windows, `source .venv/bin/activate` on Mac), then run:
 
-  ```powershell
-  .venv\Scripts\python -m nbconvert --to notebook --execute --inplace IS453_G7_Scorecard_Combined.ipynb --ExecutePreprocessor.timeout=3600
+  ```bash
+  python -m nbconvert --to notebook --execute --inplace IS453_G7_Scorecard_Combined.ipynb --ExecutePreprocessor.timeout=3600
   ```
 
-  On Mac use `.venv/bin/python -m nbconvert ...`. The run can take 10 minutes or more.
+  Activating puts `.venv` first on `PATH`, so Jupyter and the kernel both come from `.venv`, not from a global Python.
+  The run can take 10 minutes or more.
 
 The first notebook cell uses `%pip install`, which installs into the kernel's own environment. With `.venv` selected it
 finds everything already installed.
@@ -70,9 +72,9 @@ finds everything already installed.
 ## Troubleshooting
 
 - **`numpy.dtype size changed, may indicate binary incompatibility`:** the notebook ran on the wrong Python (usually a
-  global one with a different numpy). Check which Python the kernel uses, select `.venv`, and run from the command line
-  with `.venv\Scripts\python -m nbconvert` rather than `python -m jupyter`, which can hand off to a global
-  `jupyter-nbconvert` on your PATH. Do not run `%pip install` from a notebook that is attached to a global kernel.
+  global one with a different numpy). Activate `.venv` before running (so it is first on `PATH`), and select the `.venv`
+  kernel if you use an editor. Without activation, Jupyter commands can resolve to a global `jupyter-nbconvert` on your
+  `PATH`. Do not run `%pip install` from a notebook that is attached to a global kernel.
 - **`ModuleNotFoundError: pkg_resources`:** `setuptools<81` is pinned in `requirements.txt` for this reason. Reinstall the
   requirements.
 - **Install errors or no wheels for pandas 2.1.1:** you are probably on Python 3.13. Recreate `.venv` with 3.11 or 3.12.
