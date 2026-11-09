@@ -1,0 +1,6 @@
+tier,score_band,applicants,bad_rate,breakeven_APR,indicative_APR,origination_policy
+Decline,below 570,3577.0,0.19960861056751467,0.20860981770329004,,"Decline, or refer for a co-signer or security"
+Tier 4 (Higher risk),570-589,5018.0,0.09665205261060184,0.11951956277266558,0.15,Approve after full income and verified clinic-plan review
+Tier 3 (Standard),590-609,4839.0,0.048977061376317424,0.08328684457880123,0.115,Approve after income and clinic-plan checks
+Tier 2 (Near prime),610-629,2410.0,0.025311203319502075,0.06818760286579194,0.1,Approve with standard documents and verified clinic quote
+Tier 1 (Prime),630 and above,743.0,0.014804845222072678,0.05988048957448272,0.09,Approve with standard documents; verify clinic before direct payment
