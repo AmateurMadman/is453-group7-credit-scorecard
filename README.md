@@ -22,6 +22,7 @@ GitHub: AmateurMadman/is453-group7-credit-scorecard
 | `IS453_Group_7_Combined_Notebook_Writeup.md` | the write-up and slide plan; every number matches the executed notebook |
 | `FINAL_SCORECARD_NUMBERS.md` | the final numbers for the slides, next to the old values |
 | `g7_*.csv`, `g7_*.png` | tables and charts saved by the notebook (the write-up and slides use these), including `g7_applicant_walkthrough_test.csv` for the three example applicants |
+| `slide_charts/` | `make_regression_performance_charts.py` and the six charts it makes for the logistic regression and performance part; run `python slide_charts/make_regression_performance_charts.py` from the repo root |
 | `requirements.txt` | pinned package versions |
 | `IS453 Group Assignment - Application Data.csv`, `... - Bureau Data.csv` | the input data |
 | `IS453 Group Assignment - Copy.docx`, `... - Data Dict.xlsx` | the assignment brief and data dictionary |
