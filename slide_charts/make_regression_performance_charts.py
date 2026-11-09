@@ -13,6 +13,9 @@ g7_* output), takes the fitted model and its results, and saves six PNGs in slid
     jethro_6_performance_table.png   AUC, Gini, K-S, bad rate and predicted PD for the three sets
     deck_forward_selection.png       chart 1 in the Canva deck's navy palette, without a title (for the slides)
     deck_roc.png                     chart 3 in the Canva deck's navy palette, without a title (for the slides)
+    deck_coefficients.png            chart 2, navy slide version
+    deck_ks.png                      chart 4, navy slide version (with the cutoff marked)
+    deck_calibration.png             chart 5, navy slide version
 Every number on the charts comes from the notebook's model. A full run takes a few minutes.
 """
 import contextlib
@@ -290,6 +293,71 @@ def make_deck_charts(M):
         t.set_color(NAVY)
     ax.grid(color=DGRID, lw=1); ax.set_axisbelow(True)
     save(fig, 'deck_roc.png')
+
+    # Coefficients
+    ct = M['coef_table'].drop(index='intercept').copy()
+    ct.index = [i[:-4] for i in ct.index]
+    ct = ct.loc[list(M['path']['added'])[::-1]]
+    fig, ax = plt.subplots(figsize=(10, 6.6))
+    fig.subplots_adjust(left=0.43, right=0.95, top=0.97, bottom=0.11)
+    y = np.arange(len(ct))
+    ax.barh(y, ct['coef'], height=0.64, color=NAVY)
+    for yi, c in zip(y, ct['coef']):
+        ax.text(c + 0.015, yi, f'{c:.2f}', va='center', fontsize=14, color=NAVY)
+    ax.set_yticks(y)
+    ax.set_yticklabels([f"{NAMES.get(v, v)} ({SOURCE.get(v, 'Bureau')})" for v in ct.index], fontsize=14)
+    ax.set_xlabel('Coefficient on the WoE value (all positive)', fontsize=15)
+    ax.set_xlim(0, ct['coef'].max() * 1.15)
+    ax.grid(axis='x', color=DGRID, lw=1); ax.set_axisbelow(True); ax.tick_params(axis='y', length=0)
+    save(fig, 'deck_coefficients.png')
+
+    # K-S chart (test) with the cutoff marked
+    cut = int(M['best_cutoff'])
+    s_ = M['test_score']['score'].values
+    yt = M['y_test'].values
+    order = np.sort(np.unique(s_))
+    cb = np.array([((s_ <= v) & (yt == 1)).sum() for v in order]) / (yt == 1).sum()
+    cg = np.array([((s_ <= v) & (yt == 0)).sum() for v in order]) / (yt == 0).sum()
+    i = int(np.argmax(cb - cg)); ks_score, ks = order[i], (cb - cg)[i]
+    fig, ax = plt.subplots(figsize=(8.6, 6.2))
+    fig.subplots_adjust(left=0.13, right=0.97, top=0.97, bottom=0.12)
+    ax.fill_between(order, cg, cb, color=LIGHT, alpha=0.35, lw=0)
+    ax.plot(order, cb, color=NAVY, lw=3, label='Defaulters')
+    ax.plot(order, cg, color=MID, lw=3, ls='--', label='Good payers')
+    ax.axvline(cut, color=DMUTED, lw=1.4, ls=':')
+    ax.text(cut - 3, 0.97, f'Cutoff {cut}', ha='right', va='top', fontsize=13, color=DMUTED)
+    ax.annotate('', xy=(ks_score, cb[i]), xytext=(ks_score, cg[i]), arrowprops=dict(arrowstyle='<->', color=NAVY, lw=1.6))
+    ax.text(ks_score + 20, 0.36, f'K-S {ks:.1%}\nat score {ks_score:.0f}', fontsize=15, color=NAVY, va='center')
+    ax.set_xlabel('Score', fontsize=15)
+    ax.set_ylabel('Cumulative share at or below the score', fontsize=15)
+    ax.set_ylim(0, 1.02)
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
+    leg = ax.legend(loc='lower right', fontsize=15)
+    for t in leg.get_texts():
+        t.set_color(NAVY)
+    ax.grid(color=DGRID, lw=1); ax.set_axisbelow(True)
+    save(fig, 'deck_ks.png')
+
+    # Calibration by score decile (test)
+    d = pd.DataFrame({'score': s_, 'y': yt, 'p': lr.predict_proba(M['X_test'])[:, 1]})
+    d['dec'] = pd.qcut(d['score'].rank(method='first'), 10, labels=False) + 1
+    g = d.groupby('dec').agg(actual=('y', 'mean'), predicted=('p', 'mean'), lo=('score', 'min'), hi=('score', 'max'))
+    fig, ax = plt.subplots(figsize=(8.6, 6.2))
+    fig.subplots_adjust(left=0.12, right=0.97, top=0.97, bottom=0.17)
+    x = np.arange(1, 11)
+    ax.bar(x, g['actual'], width=0.64, color=LIGHT, label='Actual bad rate')
+    ax.plot(x, g['predicted'], color=NAVY, lw=2.6, marker='o', markersize=8, label='Predicted by the model')
+    ax.set_xticks(x)
+    ax.set_xticklabels([f'{int(a)}–{int(b)}' for a, b in zip(g['lo'], g['hi'])], fontsize=11.5, rotation=40, ha='right')
+    ax.set_xlabel('Score band (test set, 10 equal groups)', fontsize=15)
+    ax.set_ylabel('Bad rate', fontsize=15)
+    ax.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.05))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0, decimals=0))
+    leg = ax.legend(loc='upper right', fontsize=15)
+    for t in leg.get_texts():
+        t.set_color(NAVY)
+    ax.grid(axis='y', color=DGRID, lw=1); ax.set_axisbelow(True)
+    save(fig, 'deck_calibration.png')
 
 
 if __name__ == '__main__':  # the guard is needed on Windows, where scorecardpy starts worker processes
