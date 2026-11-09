@@ -11,6 +11,8 @@ g7_* output), takes the fitted model and its results, and saves six PNGs in slid
     jethro_4_ks.png                  K-S chart on the test set
     jethro_5_calibration.png         predicted vs actual bad rate by score decile (test)
     jethro_6_performance_table.png   AUC, Gini, K-S, bad rate and predicted PD for the three sets
+    deck_forward_selection.png       chart 1 in the Canva deck's navy palette, without a title (for the slides)
+    deck_roc.png                     chart 3 in the Canva deck's navy palette, without a title (for the slides)
 Every number on the charts comes from the notebook's model. A full run takes a few minutes.
 """
 import contextlib
@@ -248,7 +250,51 @@ def make_charts(M):
     print(f"check: test AUC {perf.loc['test', 'AUC']:.4f}, K-S {ks:.4f} at score {ks_score:.0f}, cutoff {cut}")
 
 
+def make_deck_charts(M):
+    """Slide versions of charts 1 and 3 in the deck's navy palette, with no in-image title."""
+    NAVY, MID, LIGHT, DGRID, DMUTED = '#093c62', '#3f7cb5', '#9cc3e4', '#dfe6ee', '#6b7f93'
+    plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 16, 'axes.edgecolor': '#b9c6d3',
+                         'axes.labelcolor': NAVY, 'xtick.color': DMUTED, 'ytick.color': NAVY,
+                         'axes.spines.top': False, 'axes.spines.right': False, 'legend.frameon': False,
+                         'figure.facecolor': 'white', 'axes.facecolor': 'white', 'savefig.facecolor': 'white'})
+    p = M['path'].copy()
+    p['gain'] = p['gini_validation'].diff().fillna(p['gini_validation'])
+    fig, ax = plt.subplots(figsize=(10, 6.6))
+    fig.subplots_adjust(left=0.40, right=0.93, top=0.97, bottom=0.11)
+    y = np.arange(len(p))[::-1]
+    ax.barh(y, p['gain'], height=0.64, color=NAVY)
+    for yi, g in zip(y, p['gain']):
+        ax.text(g + 0.003, yi, f'+{g:.3f}', va='center', fontsize=14, color=NAVY)
+    ax.set_yticks(y)
+    ax.set_yticklabels([f"{int(s)}. {NAMES.get(v, v)}" for s, v in zip(p.step, p.added)], fontsize=15)
+    ax.set_xlabel('Gain in validation Gini when the variable is added', fontsize=15)
+    ax.set_xlim(0, p['gain'].max() * 1.2)
+    ax.grid(axis='x', color=DGRID, lw=1); ax.set_axisbelow(True); ax.tick_params(axis='y', length=0)
+    save(fig, 'deck_forward_selection.png')
+
+    perf, lr = M['perf'], M['lr']
+    fig, ax = plt.subplots(figsize=(7.6, 6.8))
+    fig.subplots_adjust(left=0.14, right=0.96, top=0.97, bottom=0.12)
+    ax.plot([0, 1], [0, 1], ls='--', color=DMUTED, lw=1.4)
+    ax.text(0.62, 0.53, 'Random (AUC 0.5)', color=DMUTED, fontsize=13)
+    for name, key, X, yv, col, lw in [('Train', 'train', M['X_train'], M['y_train'], LIGHT, 2.4),
+                                      ('Validation', 'validation', M['X_valid'], M['y_valid'], MID, 2.4),
+                                      ('Test', 'test', M['X_test'], M['y_test'], NAVY, 3.4)]:
+        fpr, tpr, _ = metrics.roc_curve(yv, lr.predict_proba(X)[:, 1])
+        ax.plot(fpr, tpr, color=col, lw=lw, label=f"{name}: AUC {perf.loc[key, 'AUC']:.3f}")
+    ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+    ax.set_xlabel('Share of good payers flagged', fontsize=15)
+    ax.set_ylabel('Share of defaulters caught', fontsize=15)
+    leg = ax.legend(loc='lower right', fontsize=15)
+    for t in leg.get_texts():
+        t.set_color(NAVY)
+    ax.grid(color=DGRID, lw=1); ax.set_axisbelow(True)
+    save(fig, 'deck_roc.png')
+
+
 if __name__ == '__main__':  # the guard is needed on Windows, where scorecardpy starts worker processes
     if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
         sys.stdout.reconfigure(encoding='utf-8')
-    make_charts(run_notebook())
+    model = run_notebook()
+    make_charts(model)
+    make_deck_charts(model)
