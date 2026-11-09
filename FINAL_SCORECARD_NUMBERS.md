@@ -73,8 +73,8 @@ Accuracy 85.66% · Error rate 14.34% · Sensitivity 90.45% · Specificity 26.68%
 | **Cutoff 565** | 5,118 | 316 | 6.17% | 90.7m | 37.9m | **52.8m** |
 | Approve everyone | 5,740 | 431 | 7.51% | 101.4m | 53.0m | 48.5m |
 
-Old values: 226.8m vs 170.3m. The new figures are smaller mainly because the test set is about a third the size of
-before (5,740 vs 16,588 applicants).
+Old values: 226.8m vs 170.3m. The new figures are smaller because the test set and the loans are both smaller. The
+gain over approving everyone is about 9%, against 33% before.
 
 **Profit by cutoff (test):** 540 → 49.5m · 550 → 50.1m · 560 → 53.0m · **565 → 52.8m** · 570 → 53.1m · 580 → 52.0m ·
 590 → 44.8m · 600 → 35.2m · 620 → 17.1m. The curve is flat between 560 and 580; 565 is the maximum on validation, so it

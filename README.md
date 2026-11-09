@@ -9,22 +9,26 @@ GitHub: AmateurMadman/is453-group7-credit-scorecard
 | --- | --- | --- | --- |
 | v1 | script and Dossier | `c4582a1` | `archive/v1-script/` |
 | v2 | first notebook and write-up, before the validation split | `a4295cb` | `archive/v2-before-validation-split/` |
-| v3 | validation update (70/15/15 split) plus later fixes. **Current version.** | `2ec24a8` and later | repository root |
+| v3 | 50k-500k segment with adjusted bins | `2ec24a8` to `4f1d6a4` | `archive/v3-500k-adjusted-bins/` |
+| v4 | 50k-250k segment with automatic bins. **Current version.** | `c995c86` and later | repository root |
 
-## Current files (v3, use these)
+**Current headline (v4):** 38,263 applicants, 14 variables, test AUC 0.7080, K-S 32.12%, cutoff 565.
+
+## Current files (v4, use these)
 
 | File | What it is |
 | --- | --- |
 | `IS453_G7_Scorecard_Combined.ipynb` | the full pipeline, executed, with outputs |
 | `IS453_Group_7_Combined_Notebook_Writeup.md` | the write-up and slide plan; every number matches the executed notebook |
-| `g7_*.csv`, `g7_*.png` | tables and charts saved by the notebook (the write-up and slides use these) |
+| `FINAL_SCORECARD_NUMBERS.md` | the final numbers for the slides, next to the old values |
+| `g7_*.csv`, `g7_*.png` | tables and charts saved by the notebook (the write-up and slides use these), including `g7_applicant_walkthrough_test.csv` for the three example applicants |
 | `requirements.txt` | pinned package versions |
 | `IS453 Group Assignment - Application Data.csv`, `... - Bureau Data.csv` | the input data |
 | `IS453 Group Assignment - Copy.docx`, `... - Data Dict.xlsx` | the assignment brief and data dictionary |
 
 ## Archive
 
-`archive/` holds superseded versions (v1 and v2). Nothing there is current and it should not be used for slides.
+`archive/` holds superseded versions (v1, v2 and v3). Nothing there is current and it should not be used for slides.
 See [archive/README.md](archive/README.md).
 
 ## Setup
@@ -83,5 +87,5 @@ finds everything already installed.
 - **`SettingWithCopyWarning` or `FutureWarning` messages:** harmless. The setup cell silences most of them.
 - **Git says "LF will be replaced by CRLF":** harmless line-ending notice on Windows.
 - **Results differ from the write-up:** check that package versions match `requirements.txt` and that the data files
-  are unchanged. The key checks are a segment of 110,583 applicants, a 77,408 / 16,587 / 16,588 split, 14 predictors,
-  test AUC 0.7139 and cutoff 570.
+  are unchanged. The key checks are a segment of 38,263 applicants, a 26,784 / 5,739 / 5,740 split, 14 predictors,
+  test AUC 0.7080 and cutoff 565.
