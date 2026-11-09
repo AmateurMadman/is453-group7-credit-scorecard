@@ -476,7 +476,7 @@ Share of applicants and bad rate are from the training set. The full table is sa
 |  | Single / not married, Civil marriage | 27.6% | 9.6% | **38** |
 
 > [!NOTE]
-> The loan amount has a narrow bin from 155,000 to 165,000. It holds 5.4% of training applicants and has a 10.1% bad
+> The loan amount has a narrow bin from 155,000 to 165,000. It holds 5.3% of training applicants and has a 10.1% bad
 > rate, so it scores 36 points, below both neighbouring bins (46 and 40). See the [Limitations](#limitations--risks).
 
 ### 3. Cutoff Optimisation & Profitability Analysis
