@@ -324,31 +324,58 @@ to 676.*
 
 ## Component 5: Model Tuning
 
-Options are compared on the **validation** set. The test set is not used to choose between them.
+Options are compared on the **validation** set (5,739 applicants, bad rate 7.49%). The test set is not used to choose
+between them; it is scored once, after the model is locked.
 
 | Option | Variables | Training Gini | Validation Gini | Wrong-sign coefficients | Average predicted PD (validation) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Selected variables, adjusted bins (chosen)** | 14 | 0.4238 | **0.4352** | 0 | 9.06% |
-| Selected variables, automatic `sc.woebin` bins | 14 | 0.4313 | 0.4372 | 0 | 9.06% |
-| First 5 selected variables | 5 | 0.3592 | 0.3766 | 0 | 9.07% |
-| First 10 selected variables | 10 | 0.4063 | 0.4176 | 0 | 9.04% |
-| All 33 candidate variables | 33 | 0.4506 | 0.4357 | 4 | 9.06% |
-| Selected + `class_weight='balanced'` (Week 9 lab) | 14 | 0.4239 | 0.4355 | 0 | 44.37% |
+| **Selected variables, automatic `sc.woebin` bins (chosen)** | 14 | 0.4500 | **0.4383** | 0 | 7.59% |
+| Selected variables, adjusted monotonic bins | 14 | 0.4332 | 0.4245 | 0 | 7.55% |
+| First 5 selected variables | 5 | 0.4010 | 0.3883 | 0 | 7.54% |
+| First 10 selected variables | 10 | 0.4329 | 0.4246 | 0 | 7.56% |
+| All 32 candidate variables | 32 | 0.4745 | 0.4311 | 5 | 7.59% |
+| Selected + `class_weight='balanced'` (Week 9 lab) | 14 | 0.4499 | 0.4382 | 0 | 43.72% |
 
-*Actual validation bad rate: 9.09%.*
+*Actual validation bad rate: 7.49%. Source: `g7_tuning_validation.csv`.*
+
+**Automatic vs adjusted bins, same 14 predictors (validation):**
+
+| Binning | AUC | Gini | K-S | Brier score | Total bins | Bins under 5% |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Automatic (chosen)** | **0.7194** | **0.4387** | **35.06%** | 0.0661 | 62 | 0 |
+| Adjusted (monotonic `breaks_list`) | 0.7127 | 0.4253 | 33.01% | 0.0664 | 57 | 0 |
+
+*Source: `g7_binning_comparison_validation.csv`.*
+
+The difference comes almost entirely from **`TERM_MONTHS`** (loan ÷ instalment ratio), whose IV doubles from 0.113 (three
+adjusted bins) to 0.227 (five automatic bins). Its automatic bins are not monotonic, but the pattern is stable between
+training and validation:
+
+| TERM_MONTHS bin | Training applicants | Training bad rate | Validation bad rate |
+| :--- | :---: | :---: | :---: |
+| below 9.0 | 1,899 | 9.90% | 8.54% |
+| 9.0–9.5 | 3,931 | 5.49% | 6.53% |
+| 9.5–10.5 | 4,566 | 2.43% | 2.30% |
+| 10.5–13.0 | 4,312 | 12.06% | 12.96% |
+| 13.0 and above | 12,076 | 8.07% | 7.68% |
 
 > [!TIP]
 > **Tuning Decisions:**
-> - Each extra variable adds less: the validation Gini gain falls from 0.0066 at step 10 to about 0.002 at step 14, and
->   selection stops at 14 because no further variable adds at least 0.002 with every coefficient above 0.1.
-> - Automatic bins gain 0.0020 validation Gini over the adjusted bins but follow noise in the data; the adjusted bins each
->   have a business explanation and should be more stable on new applicants. The notebook's decision audit confirms the
->   gap is far below its 0.02 review threshold.
-> - Using all 33 candidate variables gives the highest training Gini (0.4506), but its validation Gini (0.4357) is only
->   0.0005 above the chosen model's, and **four coefficients have the wrong sign**, so their points would contradict their
->   own bins.
-> - `class_weight='balanced'` leaves the ranking almost unchanged (0.4355) but inflates the average predicted PD to
->   44.37% (actual 9.09%), which breaks the 600 = 5% PD scaling and the expected-default calculation.
+> - **Automatic bins are used in the final model.** They raise validation AUC from 0.7127 to 0.7194 and K-S from 33.0% to
+>   35.1% with the same 14 variables, no wrong-sign coefficients and good calibration (7.59% predicted vs 7.49% observed).
+> - **Non-monotonic `TERM_MONTHS` bins are kept on purpose.** Forcing a monotonic trend would merge bins with very
+>   different risk (2.43% vs 12.06%) and hide risk the data shows. Each bin holds at least 7% of training applicants and
+>   the pattern repeats on validation. It is an observed association, not a causal effect (the variable is a loan ÷
+>   instalment ratio, not the contract term), so it is flagged for monitoring after launch.
+> - **14 variables:** each extra variable adds less; steps 13 and 14 add about 0.002 validation Gini each, and gains
+>   flatten after about 10 variables.
+> - **All 32 candidate variables** reach the highest training Gini (0.4745) but a lower validation Gini (0.4311) and five
+>   wrong-sign coefficients: overfitting, and their points would contradict their own bins.
+> - **`class_weight='balanced'`** leaves the ranking unchanged (0.4382) but inflates the average predicted PD to 43.72%
+>   (actual 7.49%), which breaks the 600 = 5% PD scaling and the expected-default calculation.
+
+**Impact on the rest of the pipeline:** the locked model scores test AUC 0.7080, Gini 0.4159 and K-S 32.12%, and the
+validation profit-maximising cutoff becomes **565** (see Component 6).
 
 ---
 
