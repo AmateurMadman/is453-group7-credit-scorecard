@@ -1,42 +1,110 @@
+
 # IS453 Group 7: Medical Procedure Loan Credit Scorecard
 
-Credit scorecard for a Medical Procedure Loans product (IS453 Financial Analytics, Section 1, Group 7).
-GitHub: AmateurMadman/is453-group7-credit-scorecard
+Credit scorecard developed for a proposed Medical Procedure Loans product
 
-## Version labels
+## Project Overview
 
-| Label | What it is | Commit | Location |
-| --- | --- | --- | --- |
-| v1 | script and Dossier | `c4582a1` | `archive/v1-script/` |
-| v2 | first notebook and write-up, before the validation split | `a4295cb` | `archive/v2-before-validation-split/` |
-| v3 | 50k-500k segment with adjusted bins | `2ec24a8` to `4f1d6a4` | `archive/v3-500k-adjusted-bins/` |
-| v4 | 50k-250k segment with automatic bins. **Current version.** | `c995c86` and later | repository root |
+This project develops an interpretable credit scorecard to assess the repayment risk of applicants for a proposed medical procedure loan product.
 
-**Current headline (v4):** 38,263 applicants, 14 variables, test AUC 0.7080, K-S 32.12%, cutoff 565.
+Using historical loan application and credit bureau data, we implement a complete credit-scoring pipeline covering data preparation, feature engineering, variable screening, Weight of Evidence (WoE) binning, logistic regression, model validation, scorecard construction, and profitability-based cutoff selection.
 
-## Current files (v4, use these)
+As the dataset does not explicitly identify medical-purpose loans, we use a selected cash-loan segment as a proxy. The resulting scorecard is intended as an academic proof of concept rather than a production-ready medical-lending model.
 
-| File | What it is |
-| --- | --- |
-| `IS453_G7_Scorecard_Combined.ipynb` | the full pipeline, executed, with outputs |
-| `IS453_Group_7_Combined_Notebook_Writeup.md` | the write-up and slide plan; every number matches the executed notebook |
-| `FINAL_SCORECARD_NUMBERS.md` | the final numbers for the slides, next to the old values |
-| `g7_*.csv`, `g7_*.png` | tables and charts saved by the notebook (the write-up and slides use these), including `g7_applicant_walkthrough_test.csv` for the three example applicants |
-| `slide_charts/` | `make_regression_performance_charts.py` and the six charts it makes for the logistic regression and performance part; run `python slide_charts/make_regression_performance_charts.py` from the repo root |
-| `requirements.txt` | pinned package versions |
-| `IS453 Group Assignment - Application Data.csv`, `... - Bureau Data.csv` | the input data |
-| `IS453 Group Assignment - Copy.docx`, `... - Data Dict.xlsx` | the assignment brief and data dictionary |
+## Final Model Results
 
-## Archive
+| Metric | Result |
+|---|---|
+| Selected loan amount range | 50,000–250,000 dataset monetary units |
+| Final applicant population | 38,263 |
+| Historical payment-difficulty rate | 7.50% |
+| Train / validation / test split | 70% / 15% / 15% |
+| Training applicants | 26,784 |
+| Validation applicants | 5,739 |
+| Test applicants | 5,740 |
+| Final selected variables | 14 |
+| Test AUC | 0.7080 |
+| Test Gini | 0.4159 |
+| Test KS | 32.12% |
+| Selected approval cutoff | 565 |
+| Test approval rate | 89.16% |
+| Bad rate among approved applicants | 6.17% |
 
-`archive/` holds superseded versions (v1, v2 and v3). Nothing there is current and it should not be used for slides.
-See [archive/README.md](archive/README.md).
+The final scorecard uses automatic WoE binning and logistic regression. The approval cutoff of **565** was selected using validation-set scenario profitability and subsequently evaluated on the test set.
 
-## Setup
+## Methodology
 
-Use **Python 3.11 or 3.12**. Python 3.13 does not work with the pinned `pandas==2.1.1` and `numpy==1.26.4`.
+The project follows these main stages:
 
-**Windows (PowerShell):**
+1. **Customer Segmentation**
+   - Select cash-loan applicants using loan amount, age, income category, and data-quality criteria.
+   - Use this segment as a proxy for medical procedure financing.
+
+2. **Data Preparation and Feature Engineering**
+   - Clean application and bureau datasets.
+   - Aggregate historical bureau records into applicant-level features.
+   - Merge both datasets using `SK_ID_CURR`.
+   - Construct financial ratios, employment-related features, and credit-history indicators.
+
+3. **Variable Screening and WoE Binning**
+   - Perform correlation screening to reduce redundant variables.
+   - Apply fine-class and coarse-class Information Value (IV) screening.
+   - Use automatic WoE binning and check for remaining correlation between transformed variables.
+
+4. **Logistic Regression and Model Selection**
+   - Train logistic regression models using WoE-transformed predictors.
+   - Apply validation-based forward feature selection.
+   - Compare automatic and manually adjusted binning.
+   - Evaluate model discrimination and calibration.
+
+5. **Scorecard Construction**
+   - Convert logistic regression outputs into scorecard points.
+   - Use a reference score of 600, good-to-bad odds of 19:1, and Points to Double Odds (PDO) of 20.
+   - Calculate each applicant's total score from 14 selected characteristics.
+
+6. **Cutoff and Profitability Analysis**
+   - Evaluate approval rates, historical payment-difficulty rates, and illustrative profitability across candidate cutoffs.
+   - Select the cutoff using validation data.
+   - Conduct sensitivity and alternative pricing analyses.
+
+7. **Scorecard Application**
+   - Apply the final scorecard to historical test applicants.
+   - Demonstrate how individual variable contributions produce total scores and lending decisions.
+
+## Repository Structure
+
+| File / Folder | Description |
+|---|---|
+| `IS453_G7_Scorecard_Combined.ipynb` | Main Jupyter notebook containing the complete executed credit-scoring pipeline, analysis, visualisations, and results |
+| `IS453 Group Assignment - Application Data.csv` | Historical loan application dataset |
+| `IS453 Group Assignment - Bureau Data.csv` | Historical credit bureau dataset |
+| `IS453 Group Assignment - Data Dict.xlsx` | Data dictionary for the application and bureau datasets |
+| `IS453 Group Assignment - Copy.docx` | Assignment instructions and requirements |
+| `g7_*.csv` | Exported tables covering data screening, model selection, binning, performance, profitability, and scorecard application |
+| `g7_*.png` | Visualisations generated by the notebook |
+| `slide_charts/` | Scripts and charts for the logistic regression and model performance presentation |
+| `requirements.txt` | Python dependencies and pinned package versions |
+
+### Key Output Files
+
+| File | Description |
+|---|---|
+| `g7_forward_selection_validation.csv` | Validation-based forward feature selection results |
+| `g7_binning_comparison_validation.csv` | Comparison between automatic and adjusted WoE binning |
+| `g7_final_model_performance.csv` | Final model performance metrics |
+| `g7_calibration_audit.csv` | Probability calibration and Brier score results |
+| `g7_scorecard_points.csv` | Final scorecard bin-to-points mapping |
+| `g7_final_bins_and_points.csv` | Detailed scorecard bins, WoE, IV, and assigned points |
+| `g7_profit_sensitivity.csv` | Profitability sensitivity analysis |
+| `g7_applicant_walkthrough_test.csv` | Scorecard calculations for three historical test applicants |
+
+Other generated tables and charts are available in the repository.
+
+## Environment Setup
+
+Use **Python 3.11 or 3.12** to ensure compatibility with the pinned dependencies.
+
+### Windows (PowerShell)
 
 ```powershell
 py -3.11 -m venv .venv
@@ -44,7 +112,7 @@ py -3.11 -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-**Mac / Linux (not tested by the group):**
+### Mac / Linux
 
 ```bash
 python3.11 -m venv .venv
@@ -52,41 +120,78 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-If Python 3.11 is only available through Anaconda: `conda create -p .venv python=3.11`, activate it, then install
-`requirements.txt` the same way.
+Alternatively, create a Python 3.11 environment using Anaconda:
 
-## How to run
+```bash
+conda create -p .venv python=3.11
+conda activate ./.venv
+python -m pip install -r requirements.txt
+```
 
-The notebook has to run on the Python and Jupyter inside `.venv`, **not on a global Python**.
+## Running the Notebook
 
-- **VS Code:** open the notebook, choose "Select Kernel" and pick the `.venv` interpreter.
-- **Jupyter in a browser:** activate `.venv` first, then run `python -m jupyter lab`.
-- **Command line (runs every cell and saves outputs into the notebook).** Activate `.venv` first
-  (`.venv\Scripts\Activate.ps1` on Windows, `source .venv/bin/activate` on Mac), then run:
+The main notebook is:
 
-  ```bash
-  python -m nbconvert --to notebook --execute --inplace IS453_G7_Scorecard_Combined.ipynb --ExecutePreprocessor.timeout=3600
-  ```
+`IS453_G7_Scorecard_Combined.ipynb`
 
-  Activating puts `.venv` first on `PATH`, so Jupyter and the kernel both come from `.venv`, not from a global Python.
-  The run can take 10 minutes or more.
+Ensure the input CSV files are available in the repository's working directory.
 
-The first notebook cell uses `%pip install`, which installs into the kernel's own environment. With `.venv` selected it
-finds everything already installed.
+### Option 1: VS Code
 
-## Troubleshooting
+1. Open the notebook in VS Code.
+2. Select the Python interpreter from `.venv` as the notebook kernel.
+3. Run all cells in order.
 
-- **`numpy.dtype size changed, may indicate binary incompatibility`:** the notebook ran on the wrong Python (usually a
-  global one with a different numpy). Activate `.venv` before running (so it is first on `PATH`), and select the `.venv`
-  kernel if you use an editor. Without activation, Jupyter commands can resolve to a global `jupyter-nbconvert` on your
-  `PATH`. Do not run `%pip install` from a notebook that is attached to a global kernel.
-- **`ModuleNotFoundError: pkg_resources`:** `setuptools<81` is pinned in `requirements.txt` for this reason. Reinstall the
-  requirements.
-- **Install errors or no wheels for pandas 2.1.1:** you are probably on Python 3.13. Recreate `.venv` with 3.11 or 3.12.
-- **Kernel "IS453" or "python3" not found:** pick the `.venv` interpreter as the kernel, or register it with
-  `python -m ipykernel install --user --name is453 --display-name "IS453 (.venv)"`.
-- **`SettingWithCopyWarning` or `FutureWarning` messages:** harmless. The setup cell silences most of them.
-- **Git says "LF will be replaced by CRLF":** harmless line-ending notice on Windows.
-- **Results differ from the write-up:** check that package versions match `requirements.txt` and that the data files
-  are unchanged. The key checks are a segment of 38,263 applicants, a 26,784 / 5,739 / 5,740 split, 14 predictors,
-  test AUC 0.7080 and cutoff 565.
+### Option 2: JupyterLab
+
+Activate the virtual environment and launch JupyterLab:
+
+```bash
+python -m jupyter lab
+```
+
+Open the notebook, select the appropriate kernel, and run all cells.
+
+### Option 3: Command Line
+
+To execute the entire notebook and save the outputs directly into the notebook file:
+
+```bash
+python -m nbconvert --to notebook --execute --inplace IS453_G7_Scorecard_Combined.ipynb --ExecutePreprocessor.timeout=3600
+```
+
+Run this command from the repository root with `.venv` activated.
+
+The notebook generates the relevant CSV tables and PNG charts during execution.
+
+### Generate Presentation Charts
+
+The logistic regression and model performance charts can be generated separately using:
+
+```bash
+python slide_charts/make_regression_performance_charts.py
+```
+
+Run this command from the repository root.
+
+## Expected Results
+
+A successful execution should reproduce the following key results:
+
+| Check | Expected Value |
+|---|---|
+| Final modelling population | 38,263 |
+| Training / validation / test | 26,784 / 5,739 / 5,740 |
+| Final predictors | 14 |
+| Test AUC | Approximately 0.7080 |
+| Test Gini | Approximately 0.4159 |
+| Test KS | Approximately 32.12% |
+| Selected cutoff | 565 |
+
+## Limitations
+
+The model is developed using a selected cash-loan population rather than confirmed medical-loan applicants. Therefore, its predictive performance may not generalise directly to actual medical procedure financing.
+
+The scorecard also has imperfect classification performance, potential historical selection bias, and unresolved fairness considerations. Profitability calculations are illustrative and depend on assumed interest rates, funding costs, loan duration, and credit losses.
+
+Accordingly, the scorecard is presented as a **proof-of-concept credit-risk screening tool**. Real-world deployment would require validation using actual medical-loan data, verified financial assumptions, fairness assessment, and ongoing model monitoring.
