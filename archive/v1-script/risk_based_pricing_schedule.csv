@@ -1,5 +1,0 @@
-Tier,Score_Range,Rate_%,Default_Risk,Action
-Tier 1 (Prime),>= 600,6.5,< 2.5%,Approve (Instant / Auto-admit)
-Tier 2 (Near Prime),560 - 599,8.5,2.5% - 5.0%,Approve (Standard documentation)
-Tier 3 (Subprime Approved),530 - 559,12.0,5.0% - 8.5%,Approve (Proof of income required)
-Tier 4 (Decline),< 530,,> 8.5%,Reject / Co-signer / Secured guarantee
